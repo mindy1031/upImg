@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<style type="text/css">
+		.input_img{
+			width: 100px;
+			height: 100px;
+		}
+	</style>
+	<body>
+		<input src="img/cai01.png" class="input_img" type="file"/>
+		<script>
+		var PLUGIN ={
+			imgRequest: function(imgname, img, url, fun) {
+				console.log(imgname)
+				var data = {
+					imgData:img,//图片数据
+					imgName:imgname,//传输名
+					url:url||"/inc/ajax.ashx?action=uploadify__upload",//传输地址
+					response:fun||""//连接方法
+				}
+				//根据传入值修改方法
+				if(arguments.length == 2) {
+					if(typeof(img) == "function") {
+						data.response = img;
+					}
+					if(!imgname[0].type.match(/image\/.*/i)) {
+						alert("请选择图片")
+						return;
+					} else {
+						data.imgName = "Filedata";
+						data.imgData = imgname[0];
+					}
+				}
+				var reader = new FormData();
+				reader.append(data.imgName, data.imgData);
+				var httprequest = new XMLHttpRequest();
+				httprequest.open("POST", data.url);
+				httprequest.send(reader)
+				httprequest.onload = function(msg) {
+					data.response(JSON.parse(httprequest.response));
+				}
+			}
+		}
+
+			//点击上传图片事件
+			$(document).on('change', '.input_img', function(e) {
+				var ireg = /image\/.*/i;
+				var files = e.target.files || e.dataTransfer.files;
+				var sel = this.parentNode;
+				if(!files[0].type.match(ireg)) {
+					alert("请选择图片")
+					return;
+				} else {
+					PLUGIN.imgRequest("Filedata", files[0], "/inc/ajax.ashx?action=uploadify__upload", function(data) {
+						sel.style.backgroundImage = "url(" + data.filepath + ")";
+						sel.children[1].value = data.filepath;
+					})
+				}
+			})
+
+		</script>
+	</body>
+</html>
